@@ -1,0 +1,54 @@
+services:
+  ansible-server:
+    build:
+      context: ./docker/control
+    container_name: ansible-server
+    hostname: ansible-server
+    networks:
+      ansible-net:
+        ipv4_address: 10.10.1.10
+    volumes:
+      - ./ansible:/root/my-ansible
+    working_dir: /root/my-ansible
+    environment:
+      ANSIBLE_CONFIG: /etc/ansible/ansible.cfg
+    tty: true
+    stdin_open: true
+    depends_on:
+      - tnode1
+      - tnode2
+      - tnode3
+
+  tnode1:
+    build:
+      context: ./docker/managed
+    container_name: tnode1
+    hostname: tnode1
+    networks:
+      ansible-net:
+        ipv4_address: 10.10.1.11
+
+  tnode2:
+    build:
+      context: ./docker/managed
+    container_name: tnode2
+    hostname: tnode2
+    networks:
+      ansible-net:
+        ipv4_address: 10.10.1.12
+
+  tnode3:
+    build:
+      context: ./docker/managed
+    container_name: tnode3
+    hostname: tnode3
+    networks:
+      ansible-net:
+        ipv4_address: 10.10.1.13
+
+networks:
+  ansible-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.1.0/24

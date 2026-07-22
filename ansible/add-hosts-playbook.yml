@@ -1,0 +1,10 @@
+---
+- hosts: all
+  tasks:
+    - name: Add control node to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "10.10.1.10 ansible-server"
+        insertafter: EOF
+        # Docker mounts /etc/hosts; atomic rename fails without this
+        unsafe_writes: true
