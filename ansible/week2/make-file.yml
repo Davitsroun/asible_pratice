@@ -1,0 +1,20 @@
+---
+# Play: run on every host in inventory (tnode1, tnode2, tnode3)
+- hosts: all
+  tasks:
+    # Task: create empty log files (touch) with specific permissions
+    - name: test make file
+      ansible.builtin.file:
+        # item = one dict from the loop below
+        # item['log-path']  -> file path for this round
+        # item['log-mode']  -> permission like 0644 (rw-r--r--)
+        path: "{{ item['log-path'] }}"
+        mode: "{{ item['log-mode'] }}"
+        state: touch   # create file if missing; update timestamp if exists
+      loop:
+        # Round 1: item = { log-path: ..., log-mode: ... }
+        - log-path: /var/log/test1.log
+          log-mode: '0644'
+        # Round 2: second file
+        - log-path: /var/log/test2.log
+          log-mode: '0600'

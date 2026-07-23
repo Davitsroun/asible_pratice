@@ -1,0 +1,14 @@
+---
+- hosts: all
+  vars:
+    supported_distros:
+      - Ubuntu
+      - CentOS
+
+  tasks:
+    - name: check os
+      ansible.builtin.debug:
+        # ansible_facts['distribution'] = real OS name from Gathering Facts (e.g. Ubuntu)
+        msg: "This {{ ansible_facts['distribution'] }} need to use apt"
+      # Run only if host OS is in the supported_distros list
+      when: ansible_facts['distribution'] in supported_distros

@@ -1,0 +1,14 @@
+---
+- hosts: localhost  
+  vars:
+    is_production: false
+
+  tasks:
+    - name: test when task
+      ansible.builtin.shell: "echo test"
+      when: is_production 
+      register: test_result
+    
+    - name: print test result
+      ansible.builtin.debug:
+        var: test_result

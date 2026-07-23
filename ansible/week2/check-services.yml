@@ -1,0 +1,10 @@
+---
+- hosts: all
+  tasks:
+    - name: Check present services (ssh, cron)
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: started
+      loop:
+        - ssh
+        - cron

@@ -1,0 +1,11 @@
+---
+- hosts: tnode1
+  tasks:
+    - name: ingore errors
+      ansible.builtin.apt:
+        name: apache3
+        state: latest
+      ignore_errors: yes
+    - name: print message
+      ansible.builtin.debug:
+        msg: "before the task is ingored"

@@ -10,6 +10,7 @@ RUN sed -i 's|http://|https://|g' /etc/apt/sources.list \
                -o Acquire::https::Verify-Host=false install -y --no-install-recommends \
         ca-certificates \
         openssh-server \
+        rsyslog \
         python3 \
         sudo \
         iputils-ping \

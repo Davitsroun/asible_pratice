@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+    - name: check os-v2
+      ansible.builtin.debug:
+        msg: "This is for loop item: {{ ansible_facts['distribution'] }}"
+      # when = task keyword (same level as debug), NOT under debug
+      when: ansible_facts['distribution'] == "Ubuntu" or ansible_facts['distribution'] == "CentOS"

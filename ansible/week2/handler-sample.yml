@@ -1,0 +1,17 @@
+---
+- hosts: all
+  tasks:
+    # Task that may change something; if changed → notify handler
+    - name: restart cron service
+      ansible.builtin.service:
+        name: cron
+        state: restarted
+      # notify = task keyword (same level as module)
+      # value must match handlers[].name exactly
+      notify: print message
+
+  handlers:
+    # Runs ONLY if a task notified it AND that task reported changed
+    - name: print message
+      ansible.builtin.debug:
+        msg: "cron service restarted"

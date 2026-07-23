@@ -1,0 +1,21 @@
+---
+- hosts: tnode1
+  tasks:
+    # Copy script from control node (week2/) to managed node
+    - name: Copy adduser script to remote host
+      ansible.builtin.copy:
+        src: adduser-script.sh
+        dest: /tmp/adduser-script.sh
+        mode: "0755"
+
+    # Run with NO args → script prints usage message
+    # failed_when treats that message as a failure (even if rc=0)
+    - name: Run user add script
+      ansible.builtin.shell: /tmp/adduser-script.sh
+      register: command_result
+      failed_when: "'Please input' in command_result.stdout"
+      ignore_errors: true
+
+    - name: Print msg
+      ansible.builtin.debug:
+        msg: "{{ command_result.stdout }}"

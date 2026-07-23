@@ -1,0 +1,21 @@
+---
+- hosts: tnode1
+  force_handlers: true
+
+  tasks:
+    - name: force handler
+      ansible.builtin.service:
+        name: cron
+        state: restarted
+      notify:
+        - print msg
+
+    - name: install apache3
+      ansible.builtin.apt:
+        name: apache3
+        state: latest
+
+  handlers:
+    - name: print msg
+      ansible.builtin.debug:
+        msg: "handler ran (force_handlers)"
