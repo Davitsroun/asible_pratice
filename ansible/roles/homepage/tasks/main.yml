@@ -1,0 +1,46 @@
+---
+# Deploy Homepage with kubectl manifests (OCI Helm chart often 403 on ghcr)
+
+- name: Render Homepage manifests
+  ansible.builtin.template:
+    src: homepage.yaml.j2
+    dest: /tmp/homepage.yaml
+    mode: "0644"
+
+- name: Apply Homepage manifests
+  ansible.builtin.command: >
+    /usr/local/bin/k3s kubectl apply -f /tmp/homepage.yaml
+  environment:
+    KUBECONFIG: "{{ homepage_kubeconfig }}"
+  register: homepage_apply
+
+- name: Wait for Homepage deployment
+  ansible.builtin.command: >
+    /usr/local/bin/k3s kubectl -n {{ homepage_namespace }}
+    rollout status deployment/homepage --timeout=300s
+  environment:
+    KUBECONFIG: "{{ homepage_kubeconfig }}"
+  register: homepage_rollout
+
+- name: Get Homepage NodePort
+  ansible.builtin.shell: |
+    /usr/local/bin/k3s kubectl -n {{ homepage_namespace }} get svc homepage \
+      -o jsonpath='{.spec.ports[0].nodePort}'
+  environment:
+    KUBECONFIG: "{{ homepage_kubeconfig }}"
+  register: homepage_nodeport
+  changed_when: false
+
+- name: Show homepage resources
+  ansible.builtin.command: >
+    /usr/local/bin/k3s kubectl -n {{ homepage_namespace }} get pods,svc
+  environment:
+    KUBECONFIG: "{{ homepage_kubeconfig }}"
+  register: homepage_status
+  changed_when: false
+
+- name: Print access URL
+  ansible.builtin.debug:
+    msg:
+      - "{{ homepage_status.stdout_lines }}"
+      - "Homepage URL: http://{{ ansible_host | default(inventory_hostname) }}:{{ homepage_nodeport.stdout }}"

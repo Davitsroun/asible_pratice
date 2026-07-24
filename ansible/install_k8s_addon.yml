@@ -1,0 +1,13 @@
+---
+# Blog uses hosts: controlplane — that group must exist in inventory
+- hosts: controlplane
+  roles:
+    - role: k8s_addon
+      k8s_addons:
+        - name: helm
+          enabled: true
+        - name: k9s
+          enabled: true
+        # Needs kubectl + a real cluster — keep false on Docker lab
+        - name: krew
+          enabled: false

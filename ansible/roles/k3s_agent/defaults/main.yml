@@ -1,0 +1,5 @@
+---
+k3s_release: "v1.31.4+k3s1"
+k3s_url: ""
+k3s_token: ""
+k3s_agent_opts: "--snapshotter native"

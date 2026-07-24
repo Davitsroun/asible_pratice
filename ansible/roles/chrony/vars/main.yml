@@ -1,0 +1,9 @@
+---
+# vars for chrony role
+package_name: chrony
+# Ubuntu service name is chrony (RHEL/CentOS use chronyd)
+service_name: chrony
+ntp_server: "2.pool.ntp.org iburst"
+fedora_os:
+  - RedHat
+  - CentOS

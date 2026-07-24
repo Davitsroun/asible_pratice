@@ -5,9 +5,27 @@ tnode2 ansible_host=10.10.1.12
 [db]
 tnode3 ansible_host=10.10.1.13
 
+[tnode:children]
+web
+db
+
+# Kubernetes topology (k3s)
+[controlplane]
+tnode1 ansible_host=10.10.1.11
+
+[workers]
+tnode2 ansible_host=10.10.1.12
+tnode3 ansible_host=10.10.1.13
+
+[k8s:children]
+controlplane
+workers
+
 [all:children]
 web
 db
+controlplane
+workers
 
 [all:vars]
 ansible_user=root

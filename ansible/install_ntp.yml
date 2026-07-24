@@ -1,0 +1,8 @@
+---
+# Run from ~/my-ansible (NOT from roles/chrony/)
+#   cd ~/my-ansible
+#   ansible-playbook install_ntp.yml
+- hosts: tnode
+  roles:
+    - role: chrony
+      ntp_server: 0.kr.pool.ntp.org

@@ -1,0 +1,52 @@
+---
+# Installing the krew plugin
+- name: 작업 디렉토리 생성
+  ansible.builtin.file:
+    path: "/tmp/krew"
+    state: directory
+
+- name: 설치 스크립트 생성
+  ansible.builtin.copy:
+    content: |
+      #!/bin/bash
+      set -x
+
+      cd "$(mktemp -d)" || exit 1
+
+      OS="$(uname | tr '[:upper:]' '[:lower:]')"
+      ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
+      KREW="krew-${OS}_${ARCH}"
+
+      wget "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" || exit 1
+      tar zxvf "${KREW}.tar.gz" || exit 1
+      ./"${KREW}" install krew || exit 1
+    dest: "/tmp/krew/install_krew.sh"
+    mode: "0755"
+
+- name: 설치 스크립트 실행
+  ansible.builtin.shell: "/tmp/krew/install_krew.sh"
+
+- name: PATH 추가
+  ansible.builtin.lineinfile:
+    path: "~/.bashrc"
+    line: 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"'
+    create: yes
+
+- name: Source .bashrc
+  ansible.builtin.shell: "source ~/.bashrc"
+  args:
+    executable: /bin/bash
+
+- name: Krew 플러그인 설치
+  ansible.builtin.command: "kubectl krew install {{ item }}"
+  loop: "{{ krew_plugins }}"
+  register: result
+
+- name: Print command result
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+- name: 작업 디렉토리 삭제
+  ansible.builtin.file:
+    path: "/tmp/k9s"
+    state: absent

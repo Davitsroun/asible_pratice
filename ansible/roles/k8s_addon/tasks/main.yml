@@ -1,0 +1,6 @@
+---
+- name: Install addon
+  ansible.builtin.include_tasks:
+    file: "{{ item.name }}.yml"
+  loop: "{{ k8s_addons }}"
+  when: item.enabled == true

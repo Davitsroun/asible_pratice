@@ -1,0 +1,6 @@
+---
+k8s_dashboard_namespace: kubernetes-dashboard
+k8s_dashboard_kubeconfig: /etc/rancher/k3s/k3s.yaml
+k8s_dashboard_manifest_url: "https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml"
+k8s_dashboard_node_port: 30443
+k8s_dashboard_host_port: 8443

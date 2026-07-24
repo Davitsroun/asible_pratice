@@ -1,0 +1,45 @@
+---
+# Docker lab: use eth0 (not ens5/ens7) and keep Compose IPs
+- hosts: tnode1
+  vars:
+    fedora_os:
+      - CentOS
+      - RedHat
+    net_info:
+      - con_name: eth0
+        ip_addr: 10.10.1.11/24
+        ip_gw: 10.10.1.1
+        ip_dns: 8.8.8.8
+
+  tasks:
+    - name: Include role in CentOS and RedHat
+      ansible.builtin.include_role:
+        name: nmcli
+      when: ansible_facts.distribution in fedora_os
+
+    - name: Include role in Ubuntu
+      ansible.builtin.include_role:
+        name: netplan
+      when: ansible_facts.distribution == "Ubuntu"
+
+- hosts: tnode2
+  vars:
+    fedora_os:
+      - CentOS
+      - RedHat
+    net_info:
+      - con_name: eth0
+        ip_addr: 10.10.1.12/24
+        ip_gw: 10.10.1.1
+        ip_dns: 8.8.8.8
+
+  tasks:
+    - name: Include role in CentOS and RedHat
+      ansible.builtin.include_role:
+        name: nmcli
+      when: ansible_facts.distribution in fedora_os
+
+    - name: Include role in Ubuntu
+      ansible.builtin.include_role:
+        name: netplan
+      when: ansible_facts.distribution == "Ubuntu"

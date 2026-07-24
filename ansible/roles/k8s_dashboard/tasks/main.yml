@@ -1,0 +1,67 @@
+---
+# Install Kubernetes Dashboard (manifest v2.7 — Helm repo is 404/archived)
+
+- name: Apply Kubernetes Dashboard recommended manifests
+  ansible.builtin.command: >
+    /usr/local/bin/k3s kubectl apply -f {{ k8s_dashboard_manifest_url }}
+  environment:
+    KUBECONFIG: "{{ k8s_dashboard_kubeconfig }}"
+  register: dashboard_apply
+
+- name: Render admin user + NodePort service
+  ansible.builtin.template:
+    src: admin-user.yaml.j2
+    dest: /tmp/k8s-dashboard-admin.yaml
+    mode: "0644"
+
+- name: Apply admin user + NodePort
+  ansible.builtin.command: >
+    /usr/local/bin/k3s kubectl apply -f /tmp/k8s-dashboard-admin.yaml
+  environment:
+    KUBECONFIG: "{{ k8s_dashboard_kubeconfig }}"
+
+- name: Wait for Dashboard deployment
+  ansible.builtin.command: >
+    /usr/local/bin/k3s kubectl -n {{ k8s_dashboard_namespace }}
+    rollout status deployment/kubernetes-dashboard --timeout=300s
+  environment:
+    KUBECONFIG: "{{ k8s_dashboard_kubeconfig }}"
+
+- name: Show dashboard resources
+  ansible.builtin.command: >
+    /usr/local/bin/k3s kubectl -n {{ k8s_dashboard_namespace }} get pods,svc
+  environment:
+    KUBECONFIG: "{{ k8s_dashboard_kubeconfig }}"
+  register: dashboard_status
+  changed_when: false
+
+- name: Create admin login token (24h)
+  ansible.builtin.shell: |
+    # v1.24+ uses create token; fallback to secret for older clusters
+    if /usr/local/bin/k3s kubectl -n {{ k8s_dashboard_namespace }} create token admin-user --duration=24h 2>/dev/null; then
+      exit 0
+    fi
+    SECRET=$(/usr/local/bin/k3s kubectl -n {{ k8s_dashboard_namespace }} get sa admin-user -o jsonpath='{.secrets[0].name}')
+    /usr/local/bin/k3s kubectl -n {{ k8s_dashboard_namespace }} get secret "$SECRET" -o jsonpath='{.data.token}' | base64 -d
+    echo
+  environment:
+    KUBECONFIG: "{{ k8s_dashboard_kubeconfig }}"
+  register: dashboard_token
+  changed_when: false
+
+- name: Save token to workspace
+  ansible.builtin.copy:
+    content: "{{ dashboard_token.stdout }}\n"
+    dest: /root/my-ansible/k8s-dashboard-token.txt
+    mode: "0600"
+  delegate_to: localhost
+  become: false
+
+- name: Print access info
+  ansible.builtin.debug:
+    msg:
+      - "{{ dashboard_status.stdout_lines }}"
+      - "NodePort HTTPS: {{ k8s_dashboard_node_port }}"
+      - "Token file: /root/my-ansible/k8s-dashboard-token.txt"
+      - "Browser (after forward): https://localhost:{{ k8s_dashboard_host_port }}"
+      - "Login method: Token"

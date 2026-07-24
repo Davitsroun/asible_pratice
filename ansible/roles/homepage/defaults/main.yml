@@ -1,0 +1,9 @@
+---
+homepage_namespace: homepage
+homepage_release: homepage
+homepage_image: "ghcr.io/gethomepage/homepage:latest"
+homepage_service_type: NodePort
+homepage_node_port: 30080
+homepage_kubeconfig: /etc/rancher/k3s/k3s.yaml
+# Required by recent Homepage versions
+homepage_allowed_hosts: "*"

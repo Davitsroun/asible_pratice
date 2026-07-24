@@ -1,0 +1,29 @@
+# # Download and install k9s
+- name: 작업 디렉토리 생성
+  ansible.builtin.file:
+    path: "/tmp/k9s"
+    state: directory
+
+- name: k9s tar.gz 파일 다운로드
+  get_url:
+    url: "https://github.com/derailed/k9s/releases/download/v0.30.6/k9s_Linux_amd64.tar.gz"
+    dest: "/tmp/k9s/k9s.tar.gz"
+
+- name: k9s tar.gz 파일 압축 해제
+  ansible.builtin.unarchive:
+    src: "/tmp/k9s/k9s.tar.gz"
+    dest: "/tmp/k9s"
+    remote_src: true
+
+- name: k9s를 /usr/local/bin으로 이동
+  ansible.builtin.command:
+    cmd: "mv /tmp/k9s/k9s /usr/local/bin/"
+
+- name: k9s 실행 권한 설정
+  ansible.builtin.command:
+    cmd: "chmod +x /usr/local/bin/k9s"
+
+- name: 작업 디렉토리 삭제
+  ansible.builtin.file:
+    path: "/tmp/k9s"
+    state: absent

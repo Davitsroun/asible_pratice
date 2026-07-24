@@ -11,10 +11,14 @@ RUN sed -i 's|http://|https://|g' /etc/apt/sources.list \
         ca-certificates \
         openssh-server \
         rsyslog \
+        netplan.io \
         python3 \
         sudo \
         iputils-ping \
         vim \
+        curl \
+        wget \
+        tar \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /var/run/sshd /root/.ssh \

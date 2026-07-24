@@ -1,0 +1,6 @@
+---
+# k3s server (control plane) defaults
+# Pin a release so get_url is stable (update as needed)
+k3s_release: "v1.31.4+k3s1"
+k3s_server_opts: "--write-kubeconfig-mode 644 --disable=traefik --snapshotter native"
+k3s_kubeconfig_local_path: /root/my-ansible/kubeconfig

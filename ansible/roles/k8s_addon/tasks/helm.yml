@@ -1,0 +1,29 @@
+# Installing the Helm Plugin
+- name: Ensure curl is installed (helm script requires curl or wget)
+  ansible.builtin.shell: |
+    if command -v curl >/dev/null 2>&1 || command -v wget >/dev/null 2>&1; then
+      exit 0
+    fi
+    cat > /etc/apt/apt.conf.d/99insecure <<'CFG'
+    Acquire::https::Verify-Peer "false";
+    Acquire::https::Verify-Host "false";
+    CFG
+    sed -i 's|http://|https://|g' /etc/apt/sources.list
+    apt-get update
+    apt-get install -y --no-install-recommends curl ca-certificates
+  args:
+    executable: /bin/bash
+
+- name: Helm 설치스크립트 다운로드
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3"
+    dest: "/tmp/get_helm.sh"
+    mode: "0700"
+
+- name: 설치 스크립트 실행
+  ansible.builtin.command: "/tmp/get_helm.sh"
+
+- name: 설치 스크립트 삭제
+  ansible.builtin.file:
+    path: "/tmp/get_helm.sh"
+    state: absent

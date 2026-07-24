@@ -1,0 +1,10 @@
+---
+# handlers file for netplan
+
+# Full apply needs systemd-networkd (often missing in SSH-only Docker).
+# Try apply; do not fail the play if container has no network renderer.
+- name: Netplan apply
+  ansible.builtin.command: netplan apply
+  register: netplan_apply_result
+  failed_when: false
+  changed_when: netplan_apply_result.rc == 0

@@ -1,0 +1,46 @@
+---
+# tasks file for netplan (Docker-friendly)
+
+- name: Check if netplan is installed
+  ansible.builtin.command: which netplan
+  register: netplan_bin
+  changed_when: false
+  failed_when: false
+
+- name: Allow apt HTTPS without strict cert verify (lab/corporate nets)
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/99insecure
+    content: |
+      Acquire::https::Verify-Peer "false";
+      Acquire::https::Verify-Host "false";
+    mode: "0644"
+  when: netplan_bin.rc != 0
+
+- name: Use HTTPS apt mirrors
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: 'http://'
+    replace: 'https://'
+  when: netplan_bin.rc != 0
+
+- name: Install netplan via apt-get shell (ansible apt update_cache flaky here)
+  ansible.builtin.shell: |
+    apt-get update
+    apt-get install -y --no-install-recommends netplan.io
+  args:
+    executable: /bin/bash
+  when: netplan_bin.rc != 0
+
+- name: Ensure /etc/netplan directory exists
+  ansible.builtin.file:
+    path: /etc/netplan
+    state: directory
+    mode: "0755"
+
+- name: Copy netplan file
+  ansible.builtin.template:
+    src: 01-netplan-ansible.yaml.j2
+    dest: /etc/netplan/01-netplan-ansible.yaml
+    mode: "0644"
+  when: net_info[0].con_name in ansible_facts.interfaces
+  notify: Netplan apply

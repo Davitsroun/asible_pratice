@@ -19,11 +19,16 @@ services:
       - tnode2
       - tnode3
 
+  # privileged required for k3s (kubelet/container runtime)
   tnode1:
     build:
       context: ./docker/managed
     container_name: tnode1
     hostname: tnode1
+    privileged: true
+    cgroup: host
+    volumes:
+      - tnode1-k3s:/var/lib/rancher/k3s
     networks:
       ansible-net:
         ipv4_address: 10.10.1.11
@@ -33,6 +38,10 @@ services:
       context: ./docker/managed
     container_name: tnode2
     hostname: tnode2
+    privileged: true
+    cgroup: host
+    volumes:
+      - tnode2-k3s:/var/lib/rancher/k3s
     networks:
       ansible-net:
         ipv4_address: 10.10.1.12
@@ -42,9 +51,39 @@ services:
       context: ./docker/managed
     container_name: tnode3
     hostname: tnode3
+    privileged: true
+    cgroup: host
+    volumes:
+      - tnode3-k3s:/var/lib/rancher/k3s
     networks:
       ansible-net:
         ipv4_address: 10.10.1.13
+
+# Publish Homepage NodePort to Windows host: http://localhost:30080
+  homepage-fwd:
+    image: alpine/socat
+    container_name: homepage-fwd
+    restart: unless-stopped
+    command: TCP-LISTEN:30080,fork,reuseaddr TCP:tnode1:30080
+    ports:
+      - "30080:30080"
+    networks:
+      - ansible-net
+    depends_on:
+      - tnode1
+
+  # Kubernetes Dashboard HTTPS → httpS://localhost:8443
+  dashboard-fwd:
+    image: alpine/socat
+    container_name: dashboard-fwd
+    restart: unless-stopped
+    command: TCP-LISTEN:8443,fork,reuseaddr TCP:tnode1:30443
+    ports:
+      - "8443:8443"
+    networks:
+      - ansible-net
+    depends_on:
+      - tnode1
 
 networks:
   ansible-net:
@@ -52,3 +91,8 @@ networks:
     ipam:
       config:
         - subnet: 10.10.1.0/24
+
+volumes:
+  tnode1-k3s:
+  tnode2-k3s:
+  tnode3-k3s:
